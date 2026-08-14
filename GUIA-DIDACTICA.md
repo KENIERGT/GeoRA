@@ -3,7 +3,13 @@
 **Nivel sugerido:** 8.º y 9.º grado de educación secundaria (se puede retomar en 10.º).
 **Contenido:** cuerpos geométricos, desarrollo plano, área lateral, área total y volumen.
 **Duración:** dos períodos de 45 minutos.
-**Recursos:** un celular Android por cada 3 estudiantes, marcador impreso por equipo, cuaderno.
+**Recursos:** un celular Android por cada 3 estudiantes, un juego de marcadores impreso por equipo
+(generado desde `generador.html` con las medidas que el docente decida), cuaderno.
+
+**Preparación previa del docente:** en `generador.html` definir las figuras y sus medidas.
+Sugerencia para esta secuencia: un cubo, un prisma con las tres medidas distintas, una pirámide,
+un cilindro y un cono con el mismo radio y altura que el cilindro (para el momento 3).
+Imprimir la portada con el QR y una copia de los marcadores por equipo.
 
 ## Fundamento
 
@@ -16,7 +22,7 @@ interviene justo en ese salto: reduce la carga cognitiva de tener que imaginar e
 
 Sin dar fórmulas todavía.
 
-1. Cada equipo enfoca el marcador y observa el cubo.
+1. Cada equipo escanea el QR de la portada una sola vez y luego enfoca el marcador del cubo.
 2. Consigna: *cuenten las caras, los vértices y las aristas antes de mirar el panel*. Registrar en el cuaderno.
 3. Mover el control **Desarrollo** hasta la red plana. Consigna: *dibujen en el cuaderno la red que ven*.
 4. Repetir con la pirámide.

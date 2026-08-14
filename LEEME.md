@@ -3,82 +3,114 @@
 Prototipo funcional para el proyecto *Aplicación de realidad aumentada para el aprendizaje
 de cuerpos geométricos y desarrollos planos* (Matemática Educativa y Computación, UNAN-León).
 
-## Qué hace
+Son **dos aplicaciones** que trabajan juntas:
 
-- Muestra 5 cuerpos sobre un marcador impreso: **cubo, prisma rectangular, pirámide cuadrangular, cilindro y cono**.
-- El control **Desarrollo** despliega el cuerpo en su **red plana** y lo vuelve a armar, con animación continua.
-- Las **medidas son editables** (sliders) y el panel recalcula en vivo el **área lateral, el área total y el volumen**,
-  mostrando la fórmula con los valores sustituidos, no solo el resultado.
-- Cuenta **caras, vértices y aristas** y comprueba la **fórmula de Euler** (C + V − A = 2) en los poliedros,
-  advirtiendo que no aplica en cilindro y cono.
-- Funciona **sin internet** una vez cargada la primera vez (PWA con service worker) y **sin cámara**
-  en modo escritorio, para computadora.
+| Archivo | Para quién | Qué hace |
+|---|---|---|
+| `generador.html` | docente | define figuras y medidas, imprime los marcadores y genera el QR |
+| `index.html` | estudiante | se abre como cámara, escanea el marcador y muestra la figura |
 
-## Cómo ejecutarlo
+## 1. El docente prepara el material
 
-La cámara solo funciona en `https://` o en `localhost`. Hay dos caminos:
+Abre `generador.html`:
 
-**A. Prueba local (computadora)**
+1. Escribe el nombre del juego (por ejemplo *8.º grado A*).
+2. Pega la dirección donde está publicada la app (el `index.html` de GitHub Pages).
+3. Agrega las figuras que quiera —hasta 12— y **escribe las medidas que necesite**.
+   El panel muestra al instante el área total y el volumen de cada una.
+4. Pulsa **Imprimir marcadores**: sale una portada con el QR y las instrucciones, y después
+   una página por figura con su marcador y sus medidas impresas debajo.
+   La casilla *imprimir también los resultados* sirve para la copia del docente.
+
+Imprimir **al 100 %**, sin “ajustar a la página”, en papel blanco mate. El cuadro negro debe
+quedar de unos 11 cm de lado.
+
+## 2. El estudiante usa la app
+
+Escanea el QR de la portada con la cámara normal del celular. Se abre Chrome, acepta el permiso
+de cámara y la app queda lista: **la configuración del docente se guarda en el teléfono**, así que
+las siguientes veces funciona aunque no haya internet ni datos.
+
+La pantalla es solo cámara, con el mensaje *Escanea la figura geométrica*. Al enfocar un marcador:
+
+- La figura aparece sobre el papel con sus medidas reales.
+- Abajo se muestran área lateral, área total y volumen, con la fórmula sustituida.
+- El control **Desarrollo** despliega la figura en su red plana y la vuelve a armar.
+- El botón **Activar fondo / Quitar fondo** cambia entre un fondo limpio de estudio
+  (para observar mejor la figura) y la cámara real, donde la figura se ve como se comportaría
+  sobre la mesa.
+
+Si el dispositivo no tiene cámara —una computadora, por ejemplo— la app pasa sola a un modo
+sin cámara con un botón para recorrer las figuras.
+
+## 3. Publicar la app
+
+La cámara solo funciona en `https://` o en `localhost`.
+
+**Prueba local**
 
 ```bash
 cd geora
 python3 -m http.server 8000
 ```
-Abrir `http://localhost:8000/index.html`.
+Abrir `http://localhost:8000/generador.html`.
 
-**B. Publicar para usarlo en los celulares del aula (recomendado)**
+**Publicación para el aula (recomendado)**
 
-1. Crear un repositorio en GitHub y subir toda esta carpeta.
-2. Settings → Pages → Source: `main` / carpeta raíz → Save.
-3. En pocos minutos queda en `https://USUARIO.github.io/REPO/`.
-4. Abrir esa dirección en el celular, pulsar **Activar RA** y aceptar el permiso de cámara.
-5. Una vez abierta, la aplicación queda cacheada y sigue funcionando sin datos.
-
-## El marcador
-
-Abrir `marcador.html` e imprimir **al 100 %** en papel blanco mate. El cuadro negro debe medir
-unos 11 cm de lado. Es el marcador *Hiro* de ARToolKit.
-
-Recomendaciones de campo: luz pareja, sin brillos ni sombras duras sobre el papel, hoja plana
-(no doblada), cámara a 30–50 cm.
+1. Subir toda la carpeta a un repositorio de GitHub.
+2. Settings → Pages → Source: `main`, carpeta raíz → Save.
+3. Queda en `https://USUARIO.github.io/REPO/`. Esa es la dirección que se pega en el generador.
 
 ## Estructura
 
 ```
-index.html            aplicación completa (interfaz + motor geométrico + RA)
-marcador.html         marcador imprimible (imagen incrustada, no requiere internet)
-manifest.json         metadatos PWA
-sw.js                 service worker (uso sin conexión)
+index.html               app del estudiante (cámara + RA)
+generador.html           app del docente (marcadores personalizables + QR)
+js/geometria.js          motor: redes planas, plegado, áreas y volúmenes
+js/marcadores.js         glifos, generación de patrones y codificación del QR
+genera-patrones.js       script de compilación: crea data/patrones/*.patt
+data/patrones/p00..p11   los 12 patrones que reconoce el detector
+data/camera_para.dat     parámetros de calibración de cámara
 vendor/three.global.js   Three.js r164 compilado como global
 vendor/ar-threex.js      AR.js 3.4.8 (seguimiento de marcadores)
-data/patt.hiro           patrón del marcador
-data/camera_para.dat     parámetros de calibración de cámara
+vendor/qrcode.js         generador de códigos QR
+sw.js, manifest.json     funcionamiento sin conexión (PWA)
 ```
 
 ## Cómo está construido (para el capítulo de metodología)
 
-El núcleo no dibuja cuerpos 3D prefabricados. Cada cuerpo se define como una **red plana**
-(un conjunto de polígonos 2D) más un **árbol de bisagras**: qué cara se pliega sobre cuál,
-sobre qué arista y con qué ángulo.
+**El cuerpo y su desarrollo plano son el mismo objeto.** Cada figura se define como una red plana
+(polígonos 2D) más un árbol de bisagras: qué cara se pliega sobre cuál, sobre qué arista y con qué
+ángulo. El ángulo de cada bisagra es `π − ángulo diedro` del cuerpo armado. Un parámetro `t`
+entre 0 y 1 interpola entre la red desplegada y el cuerpo armado, y de ahí sale la animación.
 
-- El ángulo de pliegue de cada bisagra es `π − ángulo diedro` del cuerpo armado.
-- Armar el cuerpo = girar todas las bisagras a su ángulo; desplegarlo = llevarlas a cero.
-- El parámetro `t ∈ [0,1]` interpola ambos estados, y de ahí sale la animación.
+**Los marcadores no se distribuyen como archivos.** Hay 12 glifos fijos, elegidos por búsqueda
+para que la distancia de Hamming entre ellos y entre sus rotaciones sea al menos 6 de 16 celdas,
+y para que ninguno se parezca a sí mismo girado. El mismo glifo genera la imagen impresa y el
+archivo de patrón que usa el detector, de modo que lo único que viaja en el QR es la lista de
+figuras y medidas —un texto de pocos caracteres—. Por eso el docente puede cambiar las medidas
+libremente sin regenerar nada del programa.
 
-Consecuencia didáctica: el cuerpo y su desarrollo plano **no son dos modelos distintos**,
-son el mismo objeto en dos estados. Eso es exactamente lo que se quiere que el estudiante
-comprenda, y es también el aporte técnico defendible del prototipo.
+**Las superficies curvas** (cilindro y cono) se aproximan con 40 caras planas para poder
+desplegarlas, pero el área y el volumen se calculan con las fórmulas exactas con π.
 
-Las superficies curvas (cilindro y cono) se aproximan con 40 caras planas, pero **el área y el
-volumen se calculan con las fórmulas exactas** (π), no con la aproximación poligonal.
+## Verificación hecha
 
-## Límites conocidos del prototipo
+- Los cinco cuerpos se arman y despliegan correctamente (comprobado midiendo la caja envolvente
+  del modelo: el cubo de 7 cm mide exactamente 7 × 7 × 7).
+- Los resultados numéricos coinciden con las fórmulas (cono de r = 4 y h = 10:
+  A<sub>L</sub> = 135.34 cm², V = 167.55 cm³).
+- Detección de marcadores probada con imágenes sintéticas de los 12 marcadores, con giros de
+  −30° a 45° y los 12 patrones cargados a la vez: **9 de 9 aciertos**, confianza ≈ 0.998, y
+  ningún falso positivo cuando el patrón correcto no estaba registrado.
 
-- Un solo marcador: el cuerpo se elige desde la interfaz, no por marcadores distintos.
+## Límites conocidos
+
+- Máximo 12 marcadores distintos por juego.
 - El seguimiento por marcador es sensible a la iluminación; conviene probar en el aula real.
-- No guarda progreso del estudiante ni registra respuestas (sería la siguiente iteración).
-- Requiere navegador con WebGL: probar antes qué teléfonos tienen los alumnos.
+- No registra las respuestas del estudiante (sería la siguiente iteración).
+- Requiere navegador con WebGL: conviene un censo previo de los teléfonos del grupo.
 
 ## Créditos
 
-Three.js (MIT) · AR.js / ARToolKit (LGPL v3) · Marcador Hiro de ARToolKit.
+Three.js (MIT) · AR.js / ARToolKit (LGPL v3) · qrcode-generator (MIT).
